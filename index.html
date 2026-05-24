@@ -18,6 +18,7 @@
             padding: 0;
             user-select: none;
             -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
         body {
@@ -31,7 +32,6 @@
             align-items: center;
         }
 
-        /* Контейнер игры */
         #game-container {
             width: 90%;
             max-width: 400px;
@@ -58,7 +58,7 @@
             flex-direction: column;
             justify-content: space-around;
             align-items: center;
-            animation: fadeIn 0.5s ease forwards;
+            animation: fadeIn 0.4s ease-out forwards;
         }
 
         .screen.active {
@@ -66,11 +66,10 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        /* Заголовки и тексты */
         h1 {
             font-size: 24px;
             line-height: 1.4;
@@ -83,26 +82,25 @@
             line-height: 1.5;
         }
 
-        /* Кнопки */
         .btn {
             background: linear-gradient(45deg, var(--accent-pink), var(--light-pink));
             color: white;
             border: none;
-            padding: 14px 28px;
+            padding: 16px 32px;
             font-size: 16px;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 74, 133, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.1s;
             outline: none;
+            z-index: 10;
         }
 
         .btn:active {
             transform: scale(0.95);
         }
 
-        /* Элементы интерактива 1: Пазл */
         .puzzle-box {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -121,7 +119,7 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .puzzle-piece.aligned {
@@ -131,22 +129,20 @@
             box-shadow: 0 0 15px var(--accent-pink);
         }
 
-        /* Элементы интерактива 2: Ловушка */
         .btn-wrap {
             position: relative;
             width: 100%;
-            height: 120px;
+            height: 150px;
             margin-top: 20px;
         }
 
         #btn-no {
             position: absolute;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.15s ease-out;
             background: #4a3b5c;
             box-shadow: none;
         }
 
-        /* Дождик (Эффекты частиц) */
         .particle {
             position: absolute;
             pointer-events: none;
@@ -159,7 +155,6 @@
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Большой котик в конце */
         .cat-heart {
             font-size: 70px;
             animation: heartbeat 1.2s infinite;
@@ -167,11 +162,8 @@
         }
 
         @keyframes heartbeat {
-            0% { transform: scale(1); }
-            20% { transform: scale(1.15); }
-            40% { transform: scale(1); }
-            60% { transform: scale(1.15); }
-            100% { transform: scale(1); }
+            0%, 100% { transform: scale(1); }
+            20%, 40% { transform: scale(1.15); }
         }
     </style>
 </head>
@@ -179,7 +171,7 @@
 
     <div id="game-container">
         
-        <!-- Экран 1: Старт -->
+        <!-- Экран 1 -->
         <div id="screen-start" class="screen active">
             <div>
                 <span style="font-size: 50px;">🔒✨</span>
@@ -189,100 +181,109 @@
             <button class="btn" onclick="startQuest()">Начать игру ➔</button>
         </div>
 
-        <!-- Экран 2: Пазл Сердца -->
+        <!-- Экран 2 -->
         <div id="screen-puzzle" class="screen">
             <div>
                 <h1>Уровень 1</h1>
-                <p style="margin-top: 5px;">Собери разбитые чувства (нажимай на осколки, чтобы развернуть их правильно)</p>
+                <p style="margin-top: 5px;">Собери разбитые чувства (нажимай на осколки, чтобы повернуть их ровно)</p>
             </div>
-            
             <div class="puzzle-box">
                 <div class="puzzle-piece" id="p1" onclick="rotatePiece('p1')">💖</div>
                 <div class="puzzle-piece" id="p2" onclick="rotatePiece('p2')">🐱</div>
                 <div class="puzzle-piece" id="p3" onclick="rotatePiece('p3')">🐾</div>
                 <div class="puzzle-piece" id="p4" onclick="rotatePiece('p4')">💝</div>
             </div>
-
             <button class="btn" id="puzzle-next" style="display:none;" onclick="nextScreen('screen-quest')">Далее ✨</button>
         </div>
 
-        <!-- Экран 3: Главный вопрос (Кнопка убегает) -->
+        <!-- Экран 3 -->
         <div id="screen-quest" class="screen">
             <div>
                 <span class="cat-heart">🐱</span>
                 <h1>Уровень 2</h1>
                 <p style="margin-top: 10px; font-weight: bold; color: var(--light-pink);">Ты пойдешь со мной гулять на этих выходных?</p>
             </div>
-
             <div class="btn-wrap">
-                <button class="btn" id="btn-yes" style="position: absolute; left: 15%; top: 30%;" onclick="celebrate()">ДА!</button>
-                <button class="btn" id="btn-no" style="left: 60%; top: 30%;" onmouseover="runAway()" onclick="runAway()" ontouchstart="runAway(event)">Нет</button>
+                <button class="btn" id="btn-yes" style="position: absolute; left: 10%; top: 35%;" onclick="celebrate()">ДА!</button>
+                <button class="btn" id="btn-no" style="position: absolute; left: 55%; top: 35%;" onmouseover="runAway()" onclick="runAway()" ontouchstart="runAway(event)">Нет</button>
             </div>
         </div>
 
-        <!-- Экран 4: Финал -->
+        <!-- Экран 4 -->
         <div id="screen-final" class="screen">
             <div class="cat-heart">😻❤️</div>
             <h1>Ура! Победа!</h1>
-            <p id="final-text">Ты сделала правильный выбор! Напиши мне в ЛС, что ты прошла эту игру, и мы обсудим детали нашего секретного свидания. Мяу! ✨</p>
-            <span style="font-size: 14px; color: #8a7a99;">Пароль для прохождения: КОТИК2026</span>
+            <p>Ты сделала правильный выбор! Напиши мне в ЛС, что ты прошлa игру, и мы обсудим наше секретное свидание. Мяу! ✨</p>
+            <span style="font-size: 14px; color: #8a7a99; margin-top: 10px;">Пароль для прохождения: КОТИК2026</span>
         </div>
 
     </div>
 
     <script>
-        // Состояния пазла (произвольный начальный поворот углов)
         let puzzleState = { p1: 90, p2: 180, p3: 270, p4: 90 };
         let audioCtx = null;
 
-        // Инициализация углов пазла при старте
         window.onload = function() {
             for (let id in puzzleState) {
-                document.getElementById(id).style.transform = `rotate(${puzzleState[id]}deg)`;
+                const el = document.getElementById(id);
+                if(el) el.style.transform = `rotate(${puzzleState[id]}deg)`;
             }
         };
 
-        // Безбаговый синтезатор расслабляющей lo-fi музыки через Web Audio API
         function playAmbientMusic() {
             try {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!window.AudioContext) return;
+                
                 audioCtx = new AudioContext();
                 
-                // Функция создания бесконечной мягкой ноты
                 function createNote(freq, startTime, duration) {
+                    if(!audioCtx || audioCtx.state === 'suspended') return;
                     let osc = audioCtx.createOscillator();
                     let gain = audioCtx.createGain();
-                    
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(freq, startTime);
-                    
                     gain.gain.setValueAtTime(0, startTime);
-                    gain.gain.linearRampToValueAtTime(0.08, startTime + 0.5);
+                    gain.gain.linearRampToValueAtTime(0.05, startTime + 0.5);
                     gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-                    
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
                     osc.start(startTime);
                     osc.stop(startTime + duration);
                 }
 
-                // Циклический запуск приятного неонового перебора
-                let now = audioCtx.currentTime;
+                let nextTime = audioCtx.currentTime;
                 setInterval(() => {
-                    if (audioCtx.state === 'running') {
-                        now = audioCtx.currentTime;
-                        createNote(261.63, now, 4);     // До (C4)
-                        createNote(329.63, now + 1, 4); // Ми (E4)
-                        createNote(392.00, now + 2, 4); // Соль (G4)
-                        createNote(440.00, now + 3, 4); // Ля (A4)
+                    if (audioCtx && audioCtx.state === 'running') {
+                        let now = audioCtx.currentTime;
+                        createNote(261.63, now, 4);     
+                        createNote(329.63, now + 1, 4); 
+                        createNote(392.00, now + 2, 4); 
+                        createNote(440.00, now + 3, 4); 
                     }
                 }, 4000);
-                
             } catch(e) {
-                console.log('Аудио не поддерживается браузером');
+                console.log("Аудио заблокировано или не поддерживается");
             }
         }
 
         function startQuest() {
-            playAmbientMusic();
-nextScreen('screen-puzzle');}function nextScreen(screenId) {document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));document.getElementById(screenId).classList.add('active');}// Логика сборки пазлаfunction rotatePiece(id) {puzzleState[id] = (puzzleState[id] + 90) % 360;const el = document.getElementById(id);el.style.transform = rotate(${puzzleState[id]}deg);if (puzzleState[id] === 0) {el.classList.add('aligned');} else {el.classList.remove('aligned');}// Проверка: собран ли весь пазлif (puzzleState.p1 === 0 && puzzleState.p2 === 0 && puzzleState.p3 === 0 && puzzleState.p4 === 0) {document.getElementById('puzzle-next').style.display = 'block';spawnRain('💖', 15);}}// Идеальное убегание кнопки "Нет" (защита от клика и лагов)function runAway(event) {if(event) event.preventDefault();const btnNo = document.getElementById('btn-no');// Рассчитываем случайные координаты строго внутри контейнера кнопокconst maxX = 65;const maxY = 65;const randomX = Math.floor(Math.random() * maxX) + 5;const randomY = Math.floor(Math.random() * maxY) + 5;btnNo.style.left = randomX + '%';btnNo.style.top = randomY + '%';}// Финальный взрыв конфетти и котиков (Дождик без лагов)function celebrate() {spawnRain('🐱', 25);spawnRain('❤️', 25);spawnRain('✨', 25);setTimeout(() => {nextScreen('screen-final');}, 400);}// Оптимизированный генератор падающих частицfunction spawnRain(symbol, count) {for (let i = 0; i < count; i++) {const p = document.createElement('div');p.classList.add('particle');p.textContent = symbol;p.style.fontSize = Math.floor(Math.random() * 24 + 16) + 'px';p.style.left = Math.random() * 100 + 'vw';p.style.top = '-40px';// Разные скорости падения, чтобы создать глубинуconst duration = (Math.random() * 2 + 1.5);p.style.animationDuration = duration + 's';p.style.animationDelay = (Math.random() * 0.5) + 's';document.body.appendChild(p);// Чистим память после окончания анимацииsetTimeout(() => { p.remove(); }, (duration + 0.5) * 1000);}}
+            // Запуск звука обёрнут в безопасный блок, игра не забагуется если браузер против звука
+            try {
+                playAmbientMusic();
+                if(audioCtx && audioCtx.resume) {
+                    audioCtx.resume();
+                }
+            } catch(e) {}
+            
+            nextScreen('screen-puzzle');
+        }
+
+        function nextScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(screenId);
+            if(target) target.classList.add('active');
+        }
+
+        function rotatePiece(id) {
+            puzzleState[id] = (puzzleState[id] + 90) % 360;const el = document.getElementById(id);if(!el) return;el.style.transform = rotate(${puzzleState[id]}deg);if (puzzleState[id] === 0) {el.classList.add('aligned');} else {el.classList.remove('aligned');}if (puzzleState.p1 === 0 && puzzleState.p2 === 0 && puzzleState.p3 === 0 && puzzleState.p4 === 0) {document.getElementById('puzzle-next').style.display = 'block';spawnRain('💖', 10);}}function runAway(event) {if(event) {event.preventDefault();event.stopPropagation();}const btnNo = document.getElementById('btn-no');if(!btnNo) return;const randomX = Math.floor(Math.random() * 60) + 5;const randomY = Math.floor(Math.random() * 60) + 5;btnNo.style.left = randomX + '%';btnNo.style.top = randomY + '%';}function celebrate() {spawnRain('🐱', 20);spawnRain('❤️', 20);spawnRain('✨', 20);setTimeout(() => { nextScreen('screen-final'); }, 300);}function spawnRain(symbol, count) {for (let i = 0; i < count; i++) {const p = document.createElement('div');p.classList.add('particle');p.textContent = symbol;p.style.fontSize = Math.floor(Math.random() * 20 + 16) + 'px';p.style.left = Math.random() * 100 + 'vw';p.style.top = '-30px';const duration = (Math.random() * 1.5 + 1.5);p.style.animationDuration = duration + 's';p.style.animationDelay = (Math.random() * 0.3) + 's';document.body.appendChild(p);setTimeout(() => { p.remove(); }, (duration + 0.5) * 1000);}}
