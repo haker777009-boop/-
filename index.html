@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>✨ Секретный мир ✨</title>
+
+<style>
+body{
+ margin:0;
+ overflow:hidden;
+ font-family:Arial;
+ background: radial-gradient(circle at top, #0d1220, #05070d);
+ color:white;
+}
+
+canvas{
+ position:absolute;
+ top:0;
+ left:0;
+}
+
+#ui{
+ position:absolute;
+ width:100%;
+ text-align:center;
+ top:20px;
+ z-index:10;
+}
+
+h1{
+ font-size:22px;
+ opacity:0.9;
+}
+
+#status{
+ color:#aaa;
+ margin-top:5px;
+}
+
+.btn{
+ position:absolute;
+ padding:12px 18px;
+ background:rgba(120,160,255,0.15);
+ border:1px solid rgba(120,160,255,0.4);
+ border-radius:12px;
+ cursor:pointer;
+ backdrop-filter: blur(6px);
+ transition:0.2s;
+}
+
+.btn:hover{
+ transform:scale(1.1);
+}
+
+.star{
+ position:absolute;
+ font-size:42px;
+ filter: drop-shadow(0 0 10px white);
+ cursor:pointer;
+}
+
+.cat{
+ position:absolute;
+ font-size:60px;
+ opacity:0.3;
+ transition:0.3s;
+ cursor:pointer;
+ filter: drop-shadow(0 0 12px white);
+}
+
+#msg{
+ position:absolute;
+ bottom:80px;
+ width:100%;
+ text-align:center;
+ font-size:18px;
+ opacity:0.8;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="rain"></canvas>
+
+<div id="ui">
+ <h1 id="title">🌙 Поймай 7 звёзд</h1>
+ <div id="status">0 / 7</div>
+</div>
+
+<div id="msg"></div>
+
+<audio id="music" loop>
+ <source src="lofi.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+let stage=1;
+let score=0;
+let musicStarted=false;
+
+/* ---------- МУЗЫКА ---------- */
+function startMusic(){
+ if(musicStarted) return;
+ musicStarted=true;
+ let m=document.getElementById("music");
+ m.volume=0.25;
+ m.play();
+}
+document.addEventListener("click", startMusic);
+
+/* ---------- ПЕЧАТАЮЩИЙСЯ ТЕКСТ ---------- */
+function typeText(text){
+ let i=0;
+ let el=document.getElementById("msg");
+ el.innerHTML="";
+ let t=setInterval(()=>{
+  el.innerHTML+=text[i];
+  i++;
+  if(i>=text.length) clearInterval(t);
+ },40);
+}
+
+/* ---------- ЗВЁЗДЫ ---------- */
+function spawnStar(){
+ if(stage!==1) return;
+
+ let s=document.createElement("div");
+ s.className="star";
+ s.innerHTML="✨";
+
+ s.style.left=Math.random()*85+"vw";
+ s.style.top=(20+Math.random()*60)+"vh";
+
+ s.onclick=()=>{
+   score++;
+   document.getElementById("status").innerText=score+" / 7";
+   s.remove();
+
+   if(score<7){
+     spawnStar();
+   } else stage2();
+ };
+
+ document.body.appendChild(s);
+}
+spawnStar();
+
+/* ---------- ЭТАП 2 ---------- */
+function stage2(){
+ stage=2;
+ document.getElementById("title").innerText="🎯 Найди настоящую кнопку";
+ document.getElementById("status").innerText="только одна реальна";
+
+ for(let i=0;i<5;i++){
+   let b=document.createElement("div");
+   b.className="btn";
+   b.innerText="нажми";
+
+   b.style.left=(10+i*18)+"vw";
+   b.style.top=(40+Math.random()*10)+"vh";
+
+   b.onclick=()=>{
+     if(i===2){
+       document.querySelectorAll(".btn").forEach(e=>e.remove());
+       stage3();
+     } else {
+       b.style.transform="scale(0.8)";
+       setTimeout(()=>b.remove(),200);
+     }
+   };
+
+   document.body.appendChild(b);
+ }
+
+ typeText("что-то здесь не так...");
+}
+
+/* ---------- ЭТАП 3 ---------- */
+function stage3(){
+ stage=3;
+
+ let cat=document.createElement("div");
+ cat.className="cat";
+ cat.innerHTML="🐱";
+
+ cat.style.left="70vw";
+ cat.style.top="60vh";
+
+ document.body.appendChild(cat);
+
+ let moveX=70;
+ let dir=1;
+
+ setInterval(()=>{
+   if(stage!==3) return;
+   moveX+=dir*0.2;
+   if(moveX>80||moveX<60) dir*=-1;
+   cat.style.left=moveX+"vw";
+ },30);
+
+ cat.onclick=()=>{
+   cat.style.transform="scale(1.3)";
+   setTimeout(finish,600);
+ };
+
+ typeText("он живой... найди его");
+}
+
+/* ---------- ФИНАЛ ---------- */
+function finish(){
+ stage=4;
+
+ document.getElementById("ui").style.display="none";
+ document.getElementById("msg").innerHTML="";
+
+ typeText("✨ сюрприз открыт...");
+
+ for(let i=0;i<80;i++){
+   let s=document.createElement("div");
+   s.className="star";
+   s.innerHTML="✨";
+
+   s.style.left=Math.random()*100+"vw";
+   s.style.top="100vh";
+
+   document.body.appendChild(s);
+
+   let y=100;
+   let spd=1+Math.random()*2;
+
+   let anim=setInterval(()=>{
+     y-=spd;
+     s.style.top=y+"vh";
+     if(y<0){
+       s.remove();
+       clearInterval(anim);
+     }
+   },20);
+ }
+}
+
+/* ---------- ДОЖДЬ (CANVAS) ---------- */
+const canvas=document.getElementById("rain");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let drops=Array(120).fill().map(()=>({
+ x:Math.random()*canvas.width,
+ y:Math.random()*canvas.height,
+ l:Math.random()*1.5+1,
+ s:Math.random()*4+4
+}));
+
+function rain(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ ctx.strokeStyle="rgba(120,160,255,0.15)";
+ ctx.lineWidth=1;
+
+ drops.forEach(d=>{
+   ctx.beginPath();
+   ctx.moveTo(d.x,d.y);
+   ctx.lineTo(d.x,d.y+d.l*10);
+   ctx.stroke();
+
+   d.y+=d.s;
+   if(d.y>canvas.height){
+     d.y=0;
+     d.x=Math.random()*canvas.width;
+   }
+ });
+
+ requestAnimationFrame(rain);
+}
+rain();
+</script>
+
+</body>
+</html>
